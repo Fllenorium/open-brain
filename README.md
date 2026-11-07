@@ -7,7 +7,7 @@
 [![CI](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml/badge.svg)](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](LICENSE)
 
-![An entry with four pending proposals from two agents, shown inline in red where they would land](docs/screenshot.png)
+![Claude Code asked whether it can ship on Friday reads the deploy rules from Open Brain and answers no, citing them](docs/agent.png)
 
 One place to write what your agents know — your rules, your context, your
 skills, and the connections they're allowed to use. Every agent reads it before
@@ -24,6 +24,8 @@ read the whole store in plain English and correct it.** You write in black. Your
 agents write in red. Nothing an agent writes lands until you accept it, and
 accepting a proposal is the moment red ink becomes black.
 
+![Where you write it: an entry in Open Brain, with two agents' proposed changes shown inline in red](docs/screenshot.png)
+
 Single user. One owner, many agents. There is no organization, team, role,
 member, or seat anywhere in this codebase — ownership is a `user_id` column.
 Run one per person.
@@ -33,9 +35,8 @@ Run one per person.
   them, so the brain can grow without drowning every session.
 - **Every agent sees exactly what you bind it to.** A coding agent and a writing
   agent read different parts of the same brain.
-- **Agents propose, you decide — wherever you are.** Edits and new entries
-  arrive as pending proposals. Accept them in the document, from your terminal,
-  or just by telling the agent you already talk to.
+- **Agents propose, you decide.** Edits and new entries arrive as pending
+  proposals inside the document. Nothing lands until you accept it.
 - **Credentials without the copy-paste.** Grant an agent an API key or an MCP
   server once; it arrives at boot, encrypted at rest, never readable back.
 - **No vector database.** Search is Postgres full-text plus substring, so every
@@ -155,36 +156,13 @@ underscores because MCP clients that bridge tools into a model API need
 management, other agents. An agent cannot see or change its own permissions.
 That line is held by the absence of a tool, not by a setting.
 
-## Review from wherever you talk to your agent
+### Approving from chat
 
-You shouldn't have to open a web app to say yes. On an agent's page, tick
-**Let it accept and reject proposals for you**, and that agent gets two more
-tools:
-
-| Tool | What it is |
-|---|---|
-| `brain_pending` | What's waiting: who proposed each change, why, and the diff. |
-| `brain_decide` | Accept or reject by handle, on your behalf. |
-
-It's told what's waiting when it opens a session, so it can bring it up. Then
-the whole review happens in your chat. This is a real session — Claude Code,
-made a reviewer, going through what Hermes proposed, and leaving its own two
-for you:
-
-![Claude Code lists four waiting proposals with their diffs, then accepts and rejects Hermes's two on instruction, and says its own two need the owner](docs/chat.png)
-
-Three things keep this from becoming a way around you:
-
-- **An agent never decides its own proposals.** Otherwise being a reviewer
-  would be direct write by another name. Use a second agent, the app, or
-  `pnpm brain` for those.
-- **It only sees proposals on what it already reads.** Reviewing isn't a way to
-  look at the rest of your brain.
-- **Every decision is recorded under its name**, as made for you, so History
-  never passes one off as your own click.
-
-It's off for every agent until you turn it on, and the tools don't exist for an
-agent that isn't a reviewer.
+If you'd rather not open the app to accept a change, tick **Let it accept and
+reject proposals for you** on an agent's page. That agent gets `brain_pending`
+and `brain_decide`, so you can say "accept the hotfix one" in the chat you
+already have open. It can never decide its own proposals, and History records
+every decision it makes as made for you.
 
 ## What an agent can reach
 
