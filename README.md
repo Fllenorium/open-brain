@@ -7,7 +7,7 @@
 [![CI](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml/badge.svg)](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](LICENSE)
 
-![Claude Code asked whether it can ship on Friday reads the deploy rules from Open Brain and answers no, citing them](docs/agent.png)
+![Asked to reply to Priya about the v2 API, Claude Code reads her profile, the roadmap, and the owner's writing rules from Open Brain, and drafts a short reply with the right dates in the owner's voice](docs/agent.png)
 
 One place to write what your agents know — your rules, your context, your
 skills, and the connections they're allowed to use. Every agent reads it before
