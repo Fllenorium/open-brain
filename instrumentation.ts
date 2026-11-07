@@ -1,7 +1,8 @@
-import { brainEnv } from './lib/env'
+import { MIN_OWNER_KEY_LENGTH, brainEnv } from './lib/env'
 
 /**
- * Startup check for the credential store.
+ * Startup checks: an owner key long enough to be the whole of sign-in, and a
+ * credential store that can actually decrypt.
  *
  * This deliberately does not touch the database: instrumentation is compiled
  * separately from the server bundle, and dragging the Postgres driver into it
@@ -12,14 +13,14 @@ import { brainEnv } from './lib/env'
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return
 
-  // Holding the key is the whole of sign-in, so it has to be unguessable.
-  // `openssl rand -base64 24` gives 32 characters. A warning, not a refusal:
-  // refusing to boot would lock the owner out of a deployment that works today.
+  // Holding the key is the whole of sign-in, so it has to be unguessable, and
+  // a deployment with a guessable one should not be serving at all.
   const owner = brainEnv('OWNER_KEY')
-  if (owner && owner.length < 24) {
-    console.error(
-      '[open-brain] OPENBRAIN_OWNER_KEY is too short to be the only thing between the internet and ' +
-        'your brain. Replace it with at least 24 characters: openssl rand -base64 24',
+  if (owner && owner.length < MIN_OWNER_KEY_LENGTH) {
+    refuse(
+      `[open-brain] OPENBRAIN_OWNER_KEY is ${owner.length} characters. It is the only thing between ` +
+        `the internet and your brain, so it needs at least ${MIN_OWNER_KEY_LENGTH}. ` +
+        'Generate one with: openssl rand -base64 24',
     )
   }
 
@@ -33,8 +34,18 @@ export async function register() {
   }
 
   if (Buffer.from(key, 'base64').length !== 32) {
-    throw new Error(
+    refuse(
       '[open-brain] OPENBRAIN_MASTER_KEY must be 32 bytes, base64 encoded. Generate one with: openssl rand -base64 32',
     )
   }
+}
+
+/**
+ * Exits rather than throws. Next.js catches a throw here, logs it, and keeps
+ * serving a 500 on every route — a process that looks alive to whatever
+ * supervises it. Exiting is what makes a bad config a failed deploy.
+ */
+function refuse(message: string): never {
+  console.error(message)
+  process.exit(1)
 }

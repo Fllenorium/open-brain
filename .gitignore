@@ -3,8 +3,6 @@ node_modules
 .env
 .env.local
 .openbrain
-# the data directory from before the rename, until it is moved
-.papyrus
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

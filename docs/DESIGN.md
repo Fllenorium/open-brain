@@ -1,281 +1,221 @@
 # Open Brain — Design
 
-This is the most important document of the three. Open Brain's entire argument is that you can *see* what your agents know. Every competitor stores context in a database you can't read. If the interface isn't better than theirs, the product has no case.
+Open Brain's whole argument is that you can *see* what your agents know, and
+correct it. Every other context store keeps it somewhere you can't read. If the
+interface isn't the best way to read and fix that context, the product has no
+case. So the interface is the product.
 
-Read this fully before writing any CSS.
+The tokens live in `styles/tokens.css`. That file is the source of truth for
+every value; this document is the reasoning behind them. If the two ever
+disagree, the code is right and this document needs fixing.
 
 ---
 
-## 1. The thesis
+## 1. The idea: two hands, two inks
 
-**A brain is a working document, not an archive.** The useful ones are used, corrected, annotated, and added to over years by more than one hand. That's exactly what this product is: a document you keep, that your agents read and annotate.
+**A brain is a working document, not an archive.** The useful ones get used,
+corrected, annotated, and added to by more than one hand. That is exactly what
+this is: a document you keep, which your agents read and annotate.
 
-So the design idea comes from how working documents have always been made.
+Scribes wrote the body of a text in carbon black, then went back over it in red
+ochre to mark headings, corrections, and instructions for how to use it. Red was
+the second hand — the one that told you what to do with the first. The word
+*rubric* comes from it. Two inks, one document, and you could always tell which
+was which.
 
-Egyptian and later scribes wrote the body in carbon black, then went back over the roll in red ochre to mark headings, corrections, and instructions for how to use the text. Red ink was the second hand — the one that told you what to do with the first. The word *rubric* comes from it. Two inks, one document, and you could always tell which was which.
+**That is the product.** You write in ink. Your agents write in red. Accepting a
+proposal is the moment the red becomes ink — the second hand's suggestion enters
+the text proper.
 
-**That is the product.** You write in black. Your agents write in red. Accepting a proposal is the moment the red ink becomes black — the second hand's suggestion enters the text proper.
+Everything else in the interface stays quiet so this one idea can carry it.
 
-Everything else in the interface stays quiet so this one idea can carry the whole thing.
+### Three inks, never four
+
+| Who | Token | Meaning |
+|---|---|---|
+| You | `--ink` | Committed text |
+| An agent, Ask, or Review | `--rubric` | A second hand's claim on the text, pending |
+| Continue | `--ink-faint` | Not yet anything. Ghost text that disappears if ignored |
+
+Grey is right for a completion because nothing has been asserted: no one is
+proposing anything, the editor is just finishing your sentence. The moment it
+becomes a claim, it's red.
+
+**Red is never decoration and never a status colour.** Not for errors, not for
+danger, not for a liveness dot — a liveness dot is white. If red ever means
+anything other than "someone else wants to change this text", it stops meaning
+that.
 
 ## 2. Anti-goals
 
-- **No dashboard.** No stat cards, no charts, no activity heatmap on the home screen. There is no metric worth a hero.
+- **No dashboard.** No stat cards, no charts, no heatmap. There is no metric
+  worth a hero.
 - **No chat interface.** This is a document, not a conversation.
-- **No graph visualization** of the collection tree. Trees are lists. A force-directed graph is a screensaver.
-- **No AI-generated content on first run.** If the first screen a user sees is machine-written text they didn't ask for, they stop trusting the whole premise.
-- **No skeuomorphism.** Zero parchment textures, zero page-curl effects, zero wax seals, zero drop caps with vine flourishes. The scribal idea lives in the *two-ink logic* and nowhere else. This restraint is the entire difference between tasteful and costume.
+- **No graph view of the tree.** Trees are lists.
+- **No machine-written content on first run.** If the first thing someone sees
+  is text they didn't ask for, they stop trusting the premise.
+- **No skeuomorphism.** No parchment, no textures, no ornament. The scribal idea
+  lives in the two-ink logic and nowhere else.
 
 ## 3. Tokens
 
-### 3.1 Color
+### 3.1 Colour
 
-```css
---paper:        #FCFCFB;   /* the page */
---paper-inset:  #F2F2EF;   /* rails, inspector, code blocks */
---rule:         #E3E3DE;   /* hairlines, borders */
---rule-strong:  #C9C9C2;   /* focused borders, active states */
+Dark only. Warm near-black surfaces, stepped by lightness, darkest first:
+`--paper-inset` (the rail), `--paper` (the canvas), `--surface` (cards, inputs),
+`--surface-hi` (the active item, hover). Hairlines are `--rule`; focus and active
+borders are `--rule-strong`.
 
---ink:          #1C1B19;   /* body text — warm near-black */
---ink-soft:     #55534E;   /* secondary text */
---ink-faint:    #8B8880;   /* metadata, timestamps, placeholders */
+Text is `--ink`, `--ink-soft`, `--ink-faint`, all at least 5:1 on paper.
 
---rubric:       #A81E12;   /* THE accent — agent hand, pending state */
---rubric-wash:  #FBEDEB;   /* backgrounds of pending regions */
---rubric-soft:  #D4776C;   /* rubric at rest, hover states */
+**White is the interface accent** — primary buttons, the active rail item,
+status pills. That is what leaves red free to mean its one thing. `--rubric` is
+the agent's hand, `--rubric-wash` sits behind pending regions, and
+`--rubric-soft` is rubric at rest.
 
---gilt:         #9A7B3F;   /* used in exactly one place — see §6.4 */
-```
+**No green.** Deletions are rubric struck through; additions are rubric on a
+wash. Refusing the red/green diff convention is deliberate: it makes a proposal
+read as a second hand writing, not as a version-control screen.
 
-**One accent. No green.** Deletions are rubric with a strikethrough; additions are rubric underlined or on a wash. Resisting the red/green diff convention is deliberate — it's what makes proposals read as *a second hand writing* rather than *a version control UI*.
-
-**Explicitly avoid:** warm cream backgrounds near `#F4F1EA` paired with a terracotta accent near `#D97757`. That combination is the current default look for AI products and reads as generic on sight. Our paper is cooler and our red is deeper and duller — a red-ochre vermilion, not a clay tone. Keep the warmth in the ink, not the paper.
+`--gilt` is used in exactly one place — see §6.3.
 
 ### 3.2 Type
 
-| Role | Face | Where |
-|---|---|---|
-| Document | **Spectral** (400/500, 16.5px/1.65) | Entry bodies, entry titles, the landing hero |
-| Chrome | **Geist** (400/500, 13–14px) | Labels, buttons, tree, inspector, nav |
-| Data | **Geist Mono** (12–13px) | Slugs, tokens, tags, diffs, token counts |
+**Inter** for everything a person reads: the document, the chrome, the titles.
+**Geist Mono** for anything an agent would type — paths, slugs, tokens, tags,
+token counts, config blocks.
 
-All three are free. Spectral is an old-style serif built for screen reading — the reason for it is that the entry body is genuinely long-form prose and should feel like something you'd read, not a form field. Do not substitute Playfair, Fraunces, or Lora; they're display faces and they'll look decorative at body size.
+One family keeps the screen calm; the mono is the only switch, and it always
+means the same thing. Chrome stays small and tight; the document gets a larger
+size, generous leading, and a 68ch measure (`.measure`). That contrast — dense
+chrome, airy document — is most of the layout's personality.
 
-**Scale:** 12 / 13 / 14 / 16.5 / 20 / 28 / 40. Nothing between. Chrome never exceeds 14px.
+### 3.3 Shape
 
-### 3.3 Space and shape
-
-- 4px base grid. Rhythm: 4, 8, 12, 16, 24, 32, 48, 64.
-- **Radius: 4px everywhere.** One value. Not 2, not 8, not full-round pills.
-- Borders are 1px `--rule`. No shadows anywhere except the command palette and popovers, and there it's a single soft one.
-- **Chrome is dense, the document is generous.** The tree is tight; the entry body sits in a 64ch measure with a lot of air. That contrast is the layout's entire personality.
+Two radii: `--radius` for controls, `--radius-lg` for the cards that hold them.
+`--radius-pill` is for pills only. Borders are 1px `--rule`. The only things that
+float are dialogs and the command palette, over `--scrim`.
 
 ### 3.4 Motion
 
-Almost none, and all of it functional.
+Almost none, all of it functional.
 
-- Accept a proposal: rubric-to-ink color transition, 180ms `ease-out`. This is the one animation anyone should notice.
-- Reject: 120ms fade and collapse.
-- Tree expand: 140ms height.
-- Everything else: instant.
-- Respect `prefers-reduced-motion` — the accept transition becomes an instant swap.
+- **Accept** (`--accept`, 180ms): the wash drains and the text goes rubric → ink
+  without moving. This is the one animation anyone should notice.
+- **Reject** (`--reject`, 120ms): fades and the text closes up.
+- **Tree expand** (`--expand`, 140ms).
+- Everything else is instant. Under `prefers-reduced-motion` all three are 0ms.
 
-No page transitions, no scroll-triggered reveals, no ambient anything.
+## 4. Layout
 
-## 4. The workspace
+**One rail, never a top nav as well.** The rail holds, top to bottom: the
+wordmark, search, the tree, the four other screens (Agents, Connections,
+History, Import), and the owner line — whose brain this is. The owner's name
+appears there and nowhere else.
 
-One screen, three panes, ~90% of all usage.
+**Every screen opens the same way:** a breadcrumb starting at *Open Brain*, a
+bold title, and one line saying what the screen is for. `PageHeader` does this;
+use it.
 
-```
-┌──────────────────┬────────────────────────────────┬─────────────────┐
-│ GRIMOIRE         │                                │ Kind            │
-│                  │  How deploys work              │ Context         │
-│ ▾ Voice & style  │  ─────────────────             │                 │
-│   · tone         │                                │ Collection      │
-│   · never-do     │  Ship Monday to Thursday.      │ Engineering     │
-│                  │  Never Friday.                 │                 │
-│ ▾ Engineering ◉2 │                                │ Read by         │
-│   · deploys      │  Migrations run before the     │ 3 agents ›      │
-│   · invariants   │  build, not after. The         │                 │
-│   ▸ web-app      │  staging box shares a database │ Description     │
-│   ▸ scraper      │  with production — assume any  │ ┌─────────────┐ │
-│                  │  write there is real.          │ │ How and when│ │
-│ ▾ Writing        │                                │ │ we ship.    │ │
-│   · post-format  │                                │ └─────────────┘ │
-│                  │                                │ Shown to agents │
-│ + New collection │                                │ before they     │
-│                  │                                │ open this.      │
-│                  │                                │                 │
-│                  │                                │ v7 · 2h ago  ›  │
-└──────────────────┴────────────────────────────────┴─────────────────┘
-```
+### The workspace
 
-**Left — the tree.** Collections nest. Entries sit inside them, prefixed by kind: `§` for rule, `·` for context, `▸` for skill. A rubric-colored `◉` with a count marks pending proposals in that subtree — the only place the product ever nags you.
+Three panes, and most of the time spent in the product.
 
-**Middle — the entry.** CodeMirror in markdown mode, styled so hard it stops looking like a code editor. Spectral at 16.5px, 64ch measure, generous leading. Title is an inline editable H1 in Spectral 28px. Save on blur; no save button; a small `Saved` in `--ink-faint` that fades after two seconds.
+- **The tree**, in the rail. Collections nest; entries sit inside them, marked
+  by kind — `§` rule, `·` context, `▸` skill. A rubric dot and count marks
+  pending proposals in a subtree. It's the only place the product nags.
+- **The entry.** CodeMirror in markdown mode, styled until it stops looking like
+  a code editor. The title is an editable heading. Saves on blur; there is no
+  save button.
+- **The inspector** answers the one question people actually have: *who sees
+  this?* Kind, collection, which agents read it, the description, tags, Review,
+  and version history.
 
-**Right — the inspector.** Answers the one question users actually have: *who sees this?* Kind, collection, agent count (clickable), the description field, version history link.
+The description sits in the inspector captioned *"Shown to agents before they
+open this."* That one line teaches why the field matters — the index an agent
+gets at boot is made of descriptions — with no tooltip and no tour.
 
-**The description field is placed deliberately.** It sits in the inspector with the caption *"Shown to agents before they open this."* Users learn from that one line why the field matters, without a tooltip or an onboarding tour. Retrieval quality depends on description quality, so this is load-bearing copy.
+## 5. The rubric
 
-## 5. The rubric — proposal review
+The signature interaction. It lives in `components/rubric/extension.ts`, and
+it's worth more care than anything else here.
 
-The signature. Build this more carefully than anything else in the product.
+A proposal doesn't live on a review page. **It appears inside the entry, in the
+agent's hand, where it would land.**
 
-An agent's proposal doesn't live on a separate review page. **It appears inside the entry, in the agent's hand, in the position where it would land.**
+- Additions in `--rubric` on `--rubric-wash`, inline at position. Deletions in
+  `--rubric`, struck through, still in place.
+- Beneath each: the agent's name, when, and its rationale, then `Reject ⌫` and
+  `Accept ⏎`.
+- `⏎` accepts, `⌫` rejects, `Tab` moves to the next proposal. The whole review
+  flow works without a mouse.
+- A reject offers undo.
+- Two proposals that rewrite the same lines say so, by name, and say that
+  accepting one drops the other.
+- A counter at the top — `4 proposals · Review all` — focuses the first.
 
-```
-  Ship Monday to Thursday.
-  Never Friday.
-
-  Hotfixes are exempt and go any day.        ← rubric, on wash
-  ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-  Hermes · 2h ago
-  "Saw three Friday hotfix deploys last month,
-   all deliberate."
-                        Reject ⌫    Accept ⏎
-```
-
-Behaviour:
-
-- Proposed additions render in `--rubric` on `--rubric-wash`, inline at position.
-- Proposed deletions render in `--rubric` with a strikethrough, still in place.
-- The agent's name, time, and rationale sit directly beneath in Geist 12px.
-- **Accept:** the wash drains and the text transitions rubric → ink over 180ms. The second hand becomes the text. Nothing moves position. This is the moment worth building well.
-- **Reject:** fades and collapses in 120ms; surrounding text closes up.
-- **Edit:** the proposed text becomes editable in place; accepting then commits your version, not the agent's.
-- `⏎` accepts, `⌫` rejects, `Tab` moves to the next proposal in the entry.
-
-Multiple proposals in one entry stack inline in document order. A small counter sits at the top of the entry: `2 proposals · Review all`, which focuses the first.
-
-**Bulk accept exists and is deliberately unemphasized** — plain text link, no button styling. If accepting-without-reading becomes the habit, the trust model is dead and this is just another memory API with a nicer skin.
+**Accept all exists and is deliberately unemphasised**: plain text, no button.
+If accepting without reading becomes the habit, the trust model is gone.
 
 ## 6. Other screens
 
 ### 6.1 Agents
 
-A list, not cards. Per row: name, last seen, a status dot, and the collections it reads as small chips.
+A list, not cards: name, when it last opened a session, and what it reads.
+The detail page holds bindings, grants, the token, and the one screen worth
+building most carefully — **What this agent sees**. It renders the exact boot
+payload the agent would get right now, from the same code that serves it
+(`lib/boot-payload.ts`), with the token count at the top. Rendered as the
+document it is, not as JSON.
 
-Detail view has one thing worth building carefully — **"What this agent sees."** It renders the exact boot payload the agent would receive right now, with the token count at the top in Geist Mono.
-
-This is the most reassuring screen in the product. It's the literal answer to *what does my agent actually know?*, which is the question the whole thing is built around. Make it feel like opening the book to the page the agent reads. Don't render it as JSON — render it as the document it is, with the rules in full and the index below them as a list of titles and descriptions.
-
-Also on this screen: write policy as a two-option segmented control labelled **Propose** / **Direct**, with one line under it — *"Direct lets this agent edit without asking you first."*
+There is no write-policy switch. Everything an agent writes is a proposal.
 
 ### 6.2 History
 
-Reverse-chronological, one line per event, filterable by agent. Reads like a record of collaboration, not a syslog.
+Reverse-chronological, one line per event, filterable by agent. A record of
+collaboration, not a syslog.
 
-```
-today
-  14:22   Hermes        proposed    deploys              accepted
-  11:03   Claude Code   read        invariants
-  09:41   you           edited      pr-review
+### 6.3 Onboarding, and the one gilt moment
 
-yesterday
-  17:55   Hermes        proposed    tone                 rejected
-```
+Two steps: bring in what you already have (a CLAUDE.md, a folder, a repo) or
+write one rule, then connect an agent. Nothing is written for you: the first
+rule's examples are placeholder text, not prefilled content.
 
-Agent names in `--ink`, actions in `--ink-soft`, entry names in Spectral, outcomes in `--rubric` when pending and `--ink-faint` when resolved.
+When that first agent connects, its name writes itself in `--gilt` for a beat,
+then settles to `--ink`: *"Hermes opened your brain."* Once, ever. `--gilt`
+appears nowhere else, which is what makes it land.
 
-### 6.3 Onboarding
+### 6.4 Review, Ask, and Continue
 
-Three steps. Under two minutes, signup to connected agent. No AI writes anything on the user's behalf.
-
-1. **Name it.** Creates the root collection.
-2. **Write your first rule.** The editor opens with placeholder text — real examples in `--ink-faint`, *as placeholder, not prefilled content*. The user types something true about their own work. This is the moment they understand what the product holds.
-3. **Connect an agent.** Name it, get a token, get a copy-paste MCP config block with a tab per client (Claude Code / Cursor / other). Then a live indicator: *Waiting for your agent…*
-
-### 6.4 The one gilt moment
-
-When that first agent connects, the waiting indicator resolves. This is the only aha in the product — everything before it is setup, and this is when the thing becomes true.
-
-Mark it: the agent's name writes itself in `--gilt` for a beat, then settles to `--ink`, and the line reads *"Hermes opened your brain."* Once, ever. Never repeated on later connections.
-
-`--gilt` appears nowhere else in the entire product. That's what makes it work.
-
-## 6.5 Review, Ask, and Continue (Phase 5)
-
-Three things write into the document. They must be visually distinguishable at a
-glance, and the rule is the two-ink logic extended by exactly one step.
-
-| Source | Ink | Meaning |
-|---|---|---|
-| You | `--ink` | Committed text |
-| An agent, or Ask | `--rubric` | A second hand's claim on the text — pending |
-| Continue | `--ink-faint` | Not yet anything. Ghost text. Disappears if ignored. |
-
-Grey is the correct color for a completion because nothing has been asserted yet —
-no one is proposing, the machine is just finishing your sentence. The moment it
-becomes a claim, it's red. Hold this distinction; it's what keeps the interface
-legible once three sources write into the same page.
-
-**Review** lives in the inspector, not as a modal. A small `Review` action; results
-render as a list beneath it:
-
-```
-REVIEW                               4 findings
-
-  Redundant   "Git is a version control system."
-              Any model knows this. Remove it.
-
-  Vague       "Be careful with migrations."
-              Say what to be careful about.
-
-  Stale       No agent has opened this in 34 days.
-              The description may be the problem.
-```
-
-Each finding is clickable and scrolls to the line. Where there's a suggested
-replacement, accepting it goes through the rubric like any other proposal — same
-component, same keystroke.
-
-**No score out of 100, no letter grade, no colored severity scale.** A number
-invites optimizing the number, and the number isn't the goal. Findings in
-`--rubric`, everything else in `--ink-faint`. One accent, still.
-
-**Ask** is `⌘K`. One input, three behaviours it infers rather than mode-switches:
-navigate (type a path), search (type words), ask (type a question). `#path`
-autocompletes to an entry. Answers cite the entries they came from, as paths you
-can click. If it drafts an edit, the palette closes and the edit is sitting in the
-document in rubric, waiting on `⏎`. It never writes directly, ever.
-
-**Continue** is `Tab`. Ghost text in `--ink-faint`, inline, one sentence at most —
-never a paragraph. `Tab` accepts, `Esc` dismisses, typing anything discards it.
-Never fires unprompted; it appears only when the cursor is at the end of a line and
-you've paused. An eager completion in a document about facts is worse than none,
-because a wrong one that gets accepted becomes something your agents believe.
+- **Review** lives in the inspector, not a modal. Findings render as a list; each
+  one jumps to its line, and a suggested fix arrives as a proposal like any
+  other. No score, no grade, no severity colours.
+- **Ask** is `⌘K`: navigate by path, search by words, or ask a question.
+  Answers cite the entries they came from. If it drafts an edit, the edit is
+  waiting in the document in rubric. It never writes directly.
+- **Continue** is ghost text in `--ink-faint`, one sentence at most. `Tab`
+  accepts, `Esc` dismisses, typing discards it. It never fires unprompted — an
+  eager completion in a document of facts is worse than none, because a wrong
+  one that gets accepted becomes something your agents believe.
 
 ## 7. Copy
 
 - Second person, present tense, sentence case, no exclamation marks.
+- The product is **Open Brain** — the wordmark and the first breadcrumb, always.
 - **Never say "memory."** Say brain, entry, collection, rule, skill.
-- **Never say the agent "learned" something.** It proposed something. The distinction is the product's whole ethical posture.
-- Buttons say what happens: `Accept`, `Reject`, `Connect agent`, `Revoke token`. The action keeps its name through the flow — `Accept` produces `Accepted`.
-- Errors state what happened and what to do, without apologising: *"This entry changed since your agent read it. Reload to see the current version."*
-- Empty states are one sentence plus one action. No illustrations.
-  - No entries: *"Nothing here yet. Write what your agents should know."* → `New entry`
-  - No agents: *"No agents connected. Any agent that speaks MCP can read this."* → `Connect an agent`
-  - No proposals: *"No proposals. Your agents will suggest changes as they work."* (no action — this is a good empty state)
+- **An agent never "learned" something.** It proposed something.
+- Buttons say what happens and keep their name through the flow: `Accept`
+  produces `Accepted`.
+- Errors say what happened and what to do, without apologising.
+- Empty states are one sentence and, where it helps, one action. No
+  illustrations. *"No agents connected. Any agent that speaks MCP can read
+  this."*
 
 ## 8. Quality floor
 
-Not optional, not Phase 5.
-
-- Responsive to 375px. On mobile the three panes become tree → entry → inspector as sheets.
-- Visible keyboard focus everywhere, `--rule-strong` 2px offset ring.
+- Works down to phone width. `node scripts/shots.mjs` screenshots every screen
+  at desk and phone sizes; check both.
+- Visible keyboard focus everywhere.
 - `prefers-reduced-motion` respected.
-- Every interactive element reachable by keyboard; full review flow with no mouse.
-- Dark mode derived deliberately, not inverted: paper becomes `#141412`, ink becomes `#E8E7E3`, and rubric lightens to `#D9584A` to hold contrast on dark. Design light first — this is a product for reading prose.
-
-## 9. Build order for UI
-
-1. Tokens file and type setup — before any component
-2. Tree + entry editor + inspector (Phase 1)
-3. Agent list and "What this agent sees" (Phase 1)
-4. **The rubric** (Phase 2) — budget real time here
-5. History (Phase 2)
-6. Skills section and grants (Phase 3)
-7. Secrets: write-only fields, blast-radius line on grant (Phase 4)
-8. Review, Ask, Continue (Phase 5) — §6.5
-9. Dark mode, mobile, landing (Phase 6)
+- Every interactive element reachable by keyboard.
+- No console errors on any screen — `scripts/console-check.mjs` enforces it.

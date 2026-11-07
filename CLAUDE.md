@@ -5,8 +5,8 @@ The brain for AI agents. Open source, MIT, self-hosted.
 The interface *is* the product: the whole argument is that a person can read
 and correct what their agents know.
 
-`docs/DESIGN.md` is the original brief and is now **out of date on type, colour
-and layout**. The live design is `styles/tokens.css` — read that, not the doc:
+`styles/tokens.css` holds every design value; `docs/DESIGN.md` is the reasoning
+behind them. Change one, change the other. In short:
 
 - Warm near-black surfaces, Inter throughout, Geist Mono for anything an agent
   would type. Dark only.
@@ -17,9 +17,6 @@ and layout**. The live design is `styles/tokens.css` — read that, not the doc:
   the four other screens, and whose brain this is.
 - Every screen opens with a breadcrumb, a bold title, and one line saying what
   it's for.
-
-What still holds from DESIGN.md: the two-ink logic, one accent, motion only
-where it does work, and the copy rules.
 
 ## Non-negotiables
 
@@ -85,6 +82,13 @@ single-user product, and what a deployment uses), then a local session that
 refuses to exist in production. The unlock cookie holds an HMAC of the key, not
 the key. Agents never touch any of it.
 
+Exactly one user row, ever. `claimOwner()` is the only place one is made, and it
+refuses once there is an owner — with Clerk anyone can create an account, and
+what they must not get is a brain on someone else's server, spending its API
+keys. The server refuses to boot with an owner key under 24 characters
+(`instrumentation.ts`), because the unlock throttle is per process and keyed on
+a header a client controls: the key's length is the real protection.
+
 ## The CLI
 
 `scripts/brain.ts` is the review loop outside the browser — `pnpm brain`,
@@ -129,19 +133,14 @@ PGlite is loaded with a runtime `require`, not a static import, so a deployment
 with a real `DATABASE_URL` never pulls the wasm build into the bundle and never
 fails because it couldn't.
 
-## The old name
+## Why `papyrus` still appears in the code
 
-This project was called Papyrus. Anything a running deployment or a connected
-agent already depends on keeps working, and none of it is going away:
+This project was called Papyrus before it was public. A few aliases remain so
+that agent instructions and configs written under that name keep working. They
+cost nothing; leave them.
 
-- `PAPYRUS_*` env vars are read when the `OPENBRAIN_*` one isn't set, through
-  `brainEnv()` in `lib/env.ts`. Read settings through it, never
-  `process.env.OPENBRAIN_*` directly — a master key that silently stops being
-  read makes every stored credential unreadable.
-- `papyrus_open` and `papyrus.open` (and the rest) are aliases for `brain_open`,
-  rewritten in `app/api/mcp/route.ts`, because the line in an agent's own
-  instructions is the thing that makes it open the brain at all.
-- `lib/db/migrate.ts` renames `__papyrus_migrations` on first run.
-- Old `ppy_` tokens still authenticate; only the hash is compared.
-
-The local data directory is the one thing that moved: `mv .papyrus .openbrain`.
+- `PAPYRUS_*` env vars are fallbacks, read by `brainEnv()` in `lib/env.ts`. Read
+  settings through it, never `process.env.OPENBRAIN_*` directly.
+- `papyrus_*` and `papyrus.*` tool names are rewritten to `brain_*` in
+  `app/api/mcp/route.ts`.
+- `lib/db/migrate.ts` renames `__papyrus_migrations` if it finds one.

@@ -79,8 +79,8 @@ what to do, without apologising.
 - `lib/mcp/` is everything an agent touches, one file per tool.
 - `components/rubric/extension.ts` is the proposal UI inside the editor. Two
   things there are load-bearing and easy to break; the comments say which.
-- `docs/ARCHITECTURE.md` and `docs/PRD.md` explain the why. `docs/DESIGN.md` is
-  the original brief — `styles/tokens.css` is the live design.
+- `docs/ARCHITECTURE.md` and `docs/PRD.md` explain the why. `docs/DESIGN.md`
+  explains the interface; `styles/tokens.css` holds its values.
 
 Not sure whether something fits? Open an issue first and describe the problem
 you're solving. That's a faster conversation than a pull request that has to be

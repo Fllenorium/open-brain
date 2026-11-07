@@ -14,7 +14,7 @@ import { makePatch } from '@/lib/patch'
 import { slugify } from '@/lib/paths'
 import { createProposal } from '@/lib/proposals'
 import { createEntry, ensureCollectionPath, listEntries } from '@/lib/store'
-import type { EntryKind } from '@/lib/db/schema'
+import type { EntryKind, User } from '@/lib/db/schema'
 
 /**
  * Nobody starts empty. This flow decides whether they ever get started at all.
@@ -39,13 +39,16 @@ export type PreviewItem = {
 export type Preview = { importId: string; origin: string; items: PreviewItem[] }
 
 export async function previewPaste(text: string, label = 'pasted text'): Promise<Preview> {
-  return preview(label, [{ path: `${slugify(label)}.md`, content: text }], '')
+  const owner = await requireOwner()
+  return preview(owner, label, [{ path: `${slugify(label)}.md`, content: text }], '')
 }
 
 export async function previewUploads(
   files: { name: string; content: string }[],
 ): Promise<Preview> {
+  const owner = await requireOwner()
   return preview(
+    owner,
     files.length === 1 ? files[0].name : `${files.length} files`,
     files.map((file) => ({ path: file.name, content: file.content })),
     '',
@@ -53,6 +56,9 @@ export async function previewUploads(
 }
 
 export async function previewRepo(input: string): Promise<Preview> {
+  // First, before anything touches GitHub: the scan runs on the server's own
+  // GITHUB_TOKEN, and its errors say which private repos that token can see.
+  const owner = await requireOwner()
   const ref = parseRepo(input)
   if (!ref) throw new Error('That does not look like a repository. Try owner/repo.')
   const { files } = await scanRepo(ref)
@@ -61,12 +67,15 @@ export async function previewRepo(input: string): Promise<Preview> {
       `No context files in ${ref.owner}/${ref.repo}. Open Brain looks for CLAUDE.md, AGENTS.md, .cursorrules, SKILL.md, skills/*.md, and docs/*.md.`,
     )
   }
-  return preview(`github.com/${ref.owner}/${ref.repo}`, files, slugify(ref.repo))
+  return preview(owner, `github.com/${ref.owner}/${ref.repo}`, files, slugify(ref.repo))
 }
 
-async function preview(origin: string, files: SourceFile[], rootPrefix: string): Promise<Preview> {
-  const owner = await requireOwner()
-
+async function preview(
+  owner: User,
+  origin: string,
+  files: SourceFile[],
+  rootPrefix: string,
+): Promise<Preview> {
   let candidates: Candidate[] = []
   for (const file of files) candidates.push(...splitFile(file, rootPrefix))
 

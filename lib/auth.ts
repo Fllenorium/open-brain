@@ -7,7 +7,7 @@ import { cache } from 'react'
 import { eq } from 'drizzle-orm'
 
 import { db } from './db'
-import { brainEnv } from './env'
+import { MIN_OWNER_KEY_LENGTH, brainEnv } from './env'
 import { collections, users } from './db/schema'
 import type { User } from './db/schema'
 
@@ -50,7 +50,9 @@ export function ownerCookieValue(): string {
 
 export function ownerKeyMatches(candidate: string): boolean {
   const key = brainEnv('OWNER_KEY')
-  if (!key) return false
+  // instrumentation.ts refuses to boot with a short key. This is the same rule
+  // where it is enforced, in case something serves without running that.
+  if (!key || key.length < MIN_OWNER_KEY_LENGTH) return false
   const a = Buffer.from(candidate.trim())
   const b = Buffer.from(key)
   if (a.length !== b.length) return false
@@ -99,6 +101,28 @@ export const currentOwner = cache(async (): Promise<User | null> => {
   const existing = await db.select().from(users).where(eq(users.clerkId, identity.clerkId)).limit(1)
   if (existing[0]) return existing[0]
 
+  return claimOwner(identity)
+})
+
+/**
+ * The first person to sign in becomes the owner, and nobody else ever does.
+ *
+ * With Clerk, anyone who finds the deployment can make an account; that can't
+ * be stopped from here. What they must not get is a brain of their own on this
+ * server, running on its ANTHROPIC_API_KEY and its GITHUB_TOKEN. So creating
+ * the owner refuses once there is one — this is a single-user product, and the
+ * way to give someone else a brain is for them to run their own.
+ *
+ * The only place a user row is made, so sign-in and the Clerk webhook can't
+ * disagree about it.
+ */
+export async function claimOwner(identity: {
+  clerkId: string
+  email: string
+  name: string | null
+}): Promise<User | null> {
+  if (await ownerClaimed()) return null
+
   const [created] = await db
     .insert(users)
     .values({ clerkId: identity.clerkId, email: identity.email, name: identity.name })
@@ -114,6 +138,18 @@ export const currentOwner = cache(async (): Promise<User | null> => {
   })
 
   return created
+}
+
+/** Whether this instance already has its one owner. Sign-up closes once it does. */
+export async function ownerClaimed(): Promise<boolean> {
+  const rows = await db.select({ id: users.id }).from(users).limit(1)
+  return rows.length > 0
+}
+
+/** Signed in through Clerk, but this instance already belongs to someone else. */
+export const signedInAsSomeoneElse = cache(async (): Promise<boolean> => {
+  if (!clerkConfigured()) return false
+  return Boolean(await clerkIdentity()) && !(await currentOwner())
 })
 
 /** Use in server actions and route handlers where an owner is required. */

@@ -7,6 +7,7 @@ import { before, test } from 'node:test'
 import { sql } from 'drizzle-orm'
 
 import { issueToken } from '../lib/agent-token'
+import { claimOwner, ownerClaimed } from '../lib/auth'
 import { db } from '../lib/db'
 import { agentBindings, agentGrants, agents, collections, users } from '../lib/db/schema'
 import { migrate } from '../lib/db/migrate'
@@ -279,4 +280,15 @@ test('accepting a proposal whose path climbs still lands inside the tree', async
 
   const all = await listEntries(userId)
   assert.ok(all.every((e) => !e.path.includes('..')), 'no stored path contains ..')
+})
+
+test('once there is an owner, nobody else can become one', async () => {
+  assert.equal(await ownerClaimed(), true)
+  const [{ count: before }] = await db.select({ count: sql<number>`count(*)::int` }).from(users)
+
+  const stranger = await claimOwner({ clerkId: 'user_someone_else', email: 'stranger@example.com', name: 'Stranger' })
+
+  assert.equal(stranger, null)
+  const [{ count: after }] = await db.select({ count: sql<number>`count(*)::int` }).from(users)
+  assert.equal(after, before, 'no user row was made for them')
 })

@@ -19,3 +19,10 @@ export type BrainSetting =
 export function brainEnv(name: BrainSetting): string | undefined {
   return process.env[`OPENBRAIN_${name}`] || process.env[`PAPYRUS_${name}`] || undefined
 }
+
+/**
+ * The owner key is the whole of sign-in, and the unlock throttle can't be
+ * trusted to slow a guesser down — it counts per process, keyed on a header a
+ * client can set. So length is the protection. `openssl rand -base64 24` gives 32.
+ */
+export const MIN_OWNER_KEY_LENGTH = 24

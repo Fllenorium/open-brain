@@ -40,8 +40,10 @@ export async function lock() {
 }
 
 /**
- * Ten wrong keys per address per fifteen minutes. Per process, so it slows a
- * script rather than stopping a fleet — the key's length is what does that.
+ * Ten wrong keys per address per fifteen minutes. A courtesy, not a defence:
+ * it counts per process, and x-forwarded-for is whatever the client says unless
+ * a proxy in front overwrites it. The key's length is what actually protects
+ * the owner, which is why the app won't boot with a short one.
  */
 const WINDOW = 15 * 60_000
 const LIMIT = 10

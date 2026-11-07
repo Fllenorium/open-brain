@@ -28,8 +28,8 @@ in its repo before shipping commercially.
 
 **A component library is plumbing, not a design.** The tokens, type pairing, and
 two-ink logic in DESIGN.md are the design. Every component pulled in gets
-restyled to `styles/tokens.css` before it ships — 4px radius, 1px `--rule`
-borders, no shadows outside popovers and dialogs, one accent.
+restyled to `styles/tokens.css` before it ships — the two radii, 1px `--rule`
+borders, nothing floating except dialogs and the command palette, one accent.
 
 Worth taking — these are structural and save real time:
 

@@ -1,7 +1,14 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { clerkConfigured, currentOwner, ownerKeyConfigured } from '@/lib/auth'
+import { Button } from '@/components/ui/primitives'
+import {
+  clerkConfigured,
+  currentOwner,
+  ownerClaimed,
+  ownerKeyConfigured,
+  signedInAsSomeoneElse,
+} from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +16,10 @@ export default async function Landing() {
   const owner = await currentOwner()
   if (owner) redirect('/workspace')
   if (!clerkConfigured() && ownerKeyConfigured()) redirect('/unlock')
+  if (await signedInAsSomeoneElse()) return <Refused />
+
+  // Once the owner exists, sign-up is closed: the way in is signing in.
+  const open = clerkConfigured() && !(await ownerClaimed())
 
   return (
     <main className="mx-auto max-w-[620px] px-8 py-24">
@@ -31,12 +42,12 @@ export default async function Landing() {
 
       <div className="mt-10 flex items-center gap-5">
         <Link
-          href={clerkConfigured() ? '/sign-up' : '/workspace'}
+          href={!clerkConfigured() ? '/workspace' : open ? '/sign-up' : '/sign-in'}
           className="rounded-[4px] border border-[var(--rubric)] px-3 py-1.5 text-sm text-[var(--rubric)] transition-colors hover:bg-[var(--rubric-wash)]"
         >
           Start writing
         </Link>
-        {clerkConfigured() ? (
+        {open ? (
           <Link href="/sign-in" className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]">
             Sign in
           </Link>
@@ -83,6 +94,34 @@ export default async function Landing() {
       <footer className="mt-24 border-t border-[var(--rule)] pt-6 text-xs text-[var(--ink-faint)]">
         One owner, many agents. No teams, no seats, no sharing.
       </footer>
+    </main>
+  )
+}
+
+/** A Clerk account that isn't the owner's. It gets an explanation, not a brain. */
+async function Refused() {
+  const { SignOutButton } = await import('@clerk/nextjs')
+  return (
+    <main className="mx-auto max-w-[620px] px-8 py-24">
+      <div className="font-doc text-[17px] tracking-[0.01em] text-[var(--ink)]">Open Brain</div>
+      <h1 className="mt-16 text-[28px] font-bold leading-[1.2] tracking-[-0.03em] text-[var(--ink)]">
+        This Open Brain already has an owner
+      </h1>
+      <p className="mt-4 text-[15px] leading-[1.7] text-[var(--ink-soft)]">
+        Open Brain is single user: one person, one deployment. You&rsquo;re signed in, but this one
+        belongs to someone else. To have a brain of your own, run your own copy.
+      </p>
+      <div className="mt-8 flex items-center gap-5">
+        <SignOutButton>
+          <Button variant="primary" size="md">Sign out</Button>
+        </SignOutButton>
+        <a
+          href="https://github.com/Fllenorium/open-brain"
+          className="text-sm text-[var(--ink-soft)] hover:text-[var(--ink)]"
+        >
+          Run your own
+        </a>
+      </div>
     </main>
   )
 }

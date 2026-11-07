@@ -5,6 +5,8 @@
 [![CI](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml/badge.svg)](https://github.com/Fllenorium/open-brain/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](LICENSE)
 
+![An entry with four pending proposals from two agents, shown inline in red where they would land](docs/screenshot.png)
+
 One place to write what your agents know — your rules, your context, your
 skills, and the connections they're allowed to use. Every agent reads it before
 it answers, over MCP, with nothing pasted into a prompt. Open source and
@@ -58,7 +60,7 @@ parts it turns on.
 | Variable | Turns on |
 |---|---|
 | `DATABASE_URL` | A real Postgres instead of the local PGlite file |
-| `OPENBRAIN_OWNER_KEY` | Sign-in without Clerk — one key, one owner |
+| `OPENBRAIN_OWNER_KEY` | Sign-in without Clerk — one key, one owner. At least 24 characters |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Human sign-in through Clerk instead |
 | `ANTHROPIC_API_KEY` | Review, Ask, Continue, and generated import descriptions |
 | `OPENBRAIN_MASTER_KEY` | The connection registry (32 bytes, base64) |
@@ -102,11 +104,16 @@ vercel --prod
 ```
 
 Sign in at `/unlock` with the owner key. There are no accounts — this is a
-single-user product, so holding the key is what makes you the owner. Rotating
-`OPENBRAIN_OWNER_KEY` invalidates every session at once.
+single-user product, so holding the key is what makes you the owner. Holding it
+is the whole of sign-in, so the server refuses to start with one shorter than 24
+characters. Rotating `OPENBRAIN_OWNER_KEY` invalidates every session at once.
 
 Set the Clerk keys instead if you want real sign-in; Clerk wins when both are
-present. Either way, agents are unaffected — they authenticate with their own
+present. **The first account to sign in becomes the owner, and every other
+account is refused** — anyone can create a Clerk account on your deployment,
+but nobody else gets a brain on it or spends your `ANTHROPIC_API_KEY`. Turn off
+sign-ups in the Clerk dashboard once you're in, and sign in before you share
+the URL. Either way, agents are unaffected — they authenticate with their own
 bearer tokens and never touch a human session.
 
 **`OPENBRAIN_MASTER_KEY` is not recoverable.** Lose it and every stored credential
@@ -216,8 +223,8 @@ lib/
   ai/                           Review, Ask, Continue
 components/
   tree/  editor/  rubric/  inspector/  agents/  connections/  import/  shell/  ui/
-styles/tokens.css               every token in DESIGN.md §3
-docs/                           PRD, ARCHITECTURE, DESIGN, and the mockup
+styles/tokens.css               every design value; docs/DESIGN.md says why
+docs/                           PRD, ARCHITECTURE, DESIGN
 ```
 
 ## Review without leaving your terminal
@@ -263,19 +270,6 @@ corrections and instructions for how to use it; the word *rubric* comes from it.
 That is the whole idea. You write in ink, your agents write in red, and
 accepting a proposal is the moment red becomes ink. No textures, no ornament,
 and red is never used for decoration or for status.
-
-## Upgrading from Papyrus
-
-This project used to be called Papyrus. A running deployment needs no changes:
-
-- Every `PAPYRUS_*` variable is still read when the `OPENBRAIN_*` one isn't set.
-- Agents whose instructions say `papyrus_open` keep working — the old tool
-  names are aliases for the new ones.
-- Existing `ppy_` tokens still authenticate.
-- `pnpm db:migrate` carries the migration history over on its first run.
-
-You will need to unlock once more, because the session cookie was renamed. On
-a laptop, move the local data across: `mv .papyrus .openbrain`.
 
 ## Contributing
 

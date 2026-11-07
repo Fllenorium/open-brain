@@ -1,8 +1,9 @@
 import type { NextRequest } from 'next/server'
 import { eq } from 'drizzle-orm'
 
+import { claimOwner } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { collections, users } from '@/lib/db/schema'
+import { users } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 
@@ -30,20 +31,13 @@ export async function POST(request: NextRequest) {
   }
 
   if (event.type === 'user.created') {
-    const email = event.data.email_addresses?.[0]?.email_address ?? ''
     const existing = await db.select().from(users).where(eq(users.clerkId, event.data.id)).limit(1)
     if (!existing[0]) {
-      const [created] = await db
-        .insert(users)
-        .values({ clerkId: event.data.id, email, name: event.data.first_name ?? null })
-        .returning()
-      await db.insert(collections).values({
-        userId: created.id,
-        parentId: null,
-        name: 'Open Brain',
-        slug: '',
-        path: '',
-        position: 0,
+      // Refused, silently, if this instance already has its owner.
+      await claimOwner({
+        clerkId: event.data.id,
+        email: event.data.email_addresses?.[0]?.email_address ?? '',
+        name: event.data.first_name ?? null,
       })
     }
   }

@@ -15,7 +15,7 @@ type EntryWithBody = EntryView & { body: string }
 
 /**
  * The middle pane. CodeMirror, styled until it stops looking like a code
- * editor: Spectral at 16.5px, a 64ch measure, and a lot of air.
+ * editor: Inter at reading size, a 68ch measure, and a lot of air.
  *
  * Save on blur. No save button. A small "Saved" that fades after two seconds.
  */

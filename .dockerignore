@@ -5,7 +5,6 @@ node_modules
 .env.*
 !.env.example
 .openbrain
-.papyrus
 .context
 screenshots
 .vercel
