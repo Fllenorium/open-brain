@@ -5,6 +5,7 @@ import { and, eq } from 'drizzle-orm'
 import { db } from './db'
 import { users, type Agent, type Entry } from './db/schema'
 import { resolveEntries } from './resolve'
+import { reviewSummary } from './review'
 import { envMapOf, grantedConnections, renderConnections, type ResolvedConnection } from './connections'
 import { estimateTokens } from './tokens'
 
@@ -36,6 +37,8 @@ export type BootPayload = {
   /** Every credential, injected — never retrievable through a tool. */
   env: Record<string, string>
   reads: string[]
+  /** Only for an agent the owner made a reviewer: what is waiting for a decision. */
+  review: { waiting: number; yours: number } | null
   tokens: number
 }
 
@@ -75,6 +78,7 @@ export async function buildBootPayload(
     connections: reachable,
     env: envMapOf(reachable),
     reads: resolved.bound.map((c) => c.name),
+    review: agent.canReview ? await reviewSummary(agent) : null,
     tokens: 0,
   }
 
@@ -130,6 +134,22 @@ export function renderBootDocument(payload: BootPayload): string {
   }
 
   lines.push(...renderConnections(payload.connections))
+
+  if (payload.review) {
+    const { waiting, yours } = payload.review
+    lines.push('## Review')
+    lines.push('')
+    lines.push(
+      `You review proposals for ${payload.owner}. ` +
+        (waiting === 0
+          ? 'Nothing is waiting.'
+          : `${waiting} ${waiting === 1 ? 'is' : 'are'} waiting` +
+            (yours ? `, ${yours} of them yours, which only ${payload.owner} can decide` : '') +
+            `. Tell ${payload.owner}, and call brain_pending when they want to go through them.`),
+    )
+    lines.push('Decide only what they tell you to, after showing them the change.')
+    lines.push('')
+  }
 
   if (!payload.rules.length && !payload.context.length && !payload.skills.length && !payload.connections.length) {
     lines.push('This brain is empty. Nothing has been written for you to read yet.')

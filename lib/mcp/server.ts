@@ -11,6 +11,7 @@ import { searchTool } from './tools/search'
 import { readTool } from './tools/read'
 import { proposeTool } from './tools/propose'
 import { createTool } from './tools/create'
+import { decideTool, pendingTool } from './tools/review'
 
 /**
  * The MCP surface, shaped like a filesystem on purpose.
@@ -38,7 +39,12 @@ export function buildServer(session: AgentSession): McpServer {
         'entry is relevant, brain_search to grep, brain_list to browse. When you learn ' +
         'something durable about their work, brain_propose an edit to the entry that covers it, ' +
         'or brain_create a new entry when nothing does. Both wait for the owner before anything ' +
-        'is written.',
+        'is written.' +
+        (session.agent.canReview
+          ? '\n\nThe owner has made you a reviewer. When they ask what is waiting, call ' +
+            'brain_pending and show them each change. Call brain_decide only for what they tell you ' +
+            'to accept or reject — never on your own judgement, and never for your own proposals.'
+          : ''),
     },
   )
 
@@ -173,6 +179,40 @@ export function buildServer(session: AgentSession): McpServer {
     },
     (args) => createTool(session, args),
   )
+
+  // Only for an agent the owner made a reviewer. For every other agent these
+  // tools don't exist, which is how the line is held.
+  if (session.agent.canReview) {
+    server.registerTool(
+      'brain_pending',
+      {
+        title: 'What is waiting for review',
+        description:
+          'Proposals waiting for the owner, on what you can read: who proposed each, why, and the ' +
+          'diff. Show the owner each change before they decide. Some may be your own — you cannot ' +
+          'decide those.',
+        inputSchema: {},
+      },
+      () => pendingTool(session),
+    )
+
+    server.registerTool(
+      'brain_decide',
+      {
+        title: 'Accept or reject for the owner',
+        description:
+          'Accept or reject proposals on the owner\'s behalf, by the handle brain_pending gave. ' +
+          'Only when the owner has told you to in this conversation, after you have shown them ' +
+          'the change. Never on your own judgement, and never for your own proposals — those are ' +
+          'refused. Every decision is recorded under your name.',
+        inputSchema: {
+          handles: z.array(z.string()).min(1).describe('Handles from brain_pending, e.g. ["a1b2c3d4"]'),
+          decision: z.enum(['accept', 'reject']),
+        },
+      },
+      (args) => decideTool(session, args),
+    )
+  }
 
   return server
 }

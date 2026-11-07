@@ -14,6 +14,23 @@ import { createEntry, ensureCollectionPath, updateEntry } from './store'
  * and AI-drafted edits both arrive here, as pending proposals.
  */
 
+/**
+ * Who decided. Usually the owner; sometimes an agent they made a reviewer,
+ * deciding on their behalf from a chat. History says which, so a decision made
+ * through an agent is never mistaken for one made in the app.
+ */
+export type Decider = { type: 'user' | 'agent'; id?: string; label: string }
+
+const OWNER: Decider = { type: 'user', label: 'you' }
+
+function decidedBy(by: Decider) {
+  return {
+    actorType: by.type,
+    actorId: by.id ?? null,
+    actorLabel: by.label,
+  } as const
+}
+
 export type PendingProposal = Proposal & {
   hunks: ReturnType<typeof hunksOf>
   summary: string
@@ -234,6 +251,7 @@ export async function acceptProposal(
   userId: string,
   proposalId: string,
   override?: string,
+  by: Decider = OWNER,
 ): Promise<{ entry: Entry } | { error: string }> {
   const [proposal] = await db
     .select()
@@ -245,7 +263,7 @@ export async function acceptProposal(
   // A creation makes the entry now, at the path the agent proposed. `override`
   // is the owner's own edit of the body, if they touched it before accepting.
   if (!proposal.entryId && proposal.newEntry) {
-    return acceptCreation(userId, proposal, override)
+    return acceptCreation(userId, proposal, override, by)
   }
 
   const [entry] = await db
@@ -280,13 +298,12 @@ export async function acceptProposal(
 
   await log({
     userId,
-    actorType: 'user',
-    actorLabel: 'you',
+    ...decidedBy(by),
     action: 'accepted',
     targetType: 'entry',
     targetId: entry.id,
     targetLabel: entry.path,
-    metadata: { from: proposal.authorLabel, edited: override !== undefined },
+    metadata: { from: proposal.authorLabel, edited: override !== undefined, onBehalfOfOwner: by.type === 'agent' },
   })
 
   return { entry: updated }
@@ -300,7 +317,8 @@ export async function acceptProposal(
 async function acceptCreation(
   userId: string,
   proposal: Proposal,
-  override?: string,
+  override: string | undefined,
+  by: Decider,
 ): Promise<{ entry: Entry } | { error: string }> {
   const target = proposal.newEntry
   if (!target) return { error: 'That proposal is no longer a new entry.' }
@@ -325,13 +343,17 @@ async function acceptCreation(
 
   await log({
     userId,
-    actorType: 'user',
-    actorLabel: 'you',
+    ...decidedBy(by),
     action: 'accepted',
     targetType: 'entry',
     targetId: entry.id,
     targetLabel: entry.path,
-    metadata: { from: proposal.authorLabel, edited: override !== undefined, creation: true },
+    metadata: {
+      from: proposal.authorLabel,
+      edited: override !== undefined,
+      creation: true,
+      onBehalfOfOwner: by.type === 'agent',
+    },
   })
 
   return { entry }
@@ -340,6 +362,7 @@ async function acceptCreation(
 export async function rejectProposal(
   userId: string,
   proposalId: string,
+  by: Decider = OWNER,
 ): Promise<{ ok: true } | { error: string }> {
   const [proposal] = await db
     .select()
@@ -359,13 +382,12 @@ export async function rejectProposal(
 
   await log({
     userId,
-    actorType: 'user',
-    actorLabel: 'you',
+    ...decidedBy(by),
     action: 'rejected',
     targetType: 'entry',
     targetId: proposal.entryId,
     targetLabel: entry?.path ?? proposal.newEntry?.path ?? '',
-    metadata: { from: proposal.authorLabel, creation: !proposal.entryId },
+    metadata: { from: proposal.authorLabel, creation: !proposal.entryId, onBehalfOfOwner: by.type === 'agent' },
   })
 
   return { ok: true }

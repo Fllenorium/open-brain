@@ -10,6 +10,7 @@ import {
   rotateToken,
   setBindings,
   setGrants,
+  setReviewer,
 } from '@/app/_actions/agents'
 import { setConnectionGrants, setGrantWindow } from '@/app/_actions/connections'
 import { Button, Chip, Label } from '@/components/ui/primitives'
@@ -25,6 +26,7 @@ type Agent = {
   tokenPrefix: string
   lastSeenAt: string | null
   revokedAt: string | null
+  canReview: boolean
 }
 
 export function AgentDetail({
@@ -63,6 +65,7 @@ export function AgentDetail({
   const [, startTransition] = useTransition()
   const [name, setName] = useState(agent.name)
   const [bound, setBound] = useState(boundIds)
+  const [reviews, setReviews] = useState(agent.canReview)
   const [granted, setGranted] = useState(grantedIds)
   const [grantedConnections, setGrantedConnections] = useState(connectionGrantIds)
   const [windowHours, setWindowHours] = useState<number | null>(null)
@@ -125,6 +128,29 @@ export function AgentDetail({
         </div>
         <p className="mt-2 text-xs leading-[1.5] text-[var(--ink-faint)]">
           It also reads everything under what you tick, and everything above it up to the root.
+        </p>
+      </section>
+
+      <section className="mt-8">
+        <Label className="mb-2">Reviews</Label>
+        <label className="flex cursor-pointer items-center gap-2 rounded-[4px] px-1.5 py-1 text-sm text-[var(--ink-soft)] hover:bg-[var(--paper-inset)]">
+          <input
+            type="checkbox"
+            checked={reviews}
+            onChange={(event) => {
+              const next = event.target.checked
+              setReviews(next)
+              commit(() => setReviewer(agent.id, next))
+            }}
+            className="accent-[var(--rubric)]"
+          />
+          Let {agent.name} accept and reject proposals for you
+        </label>
+        <p className="mt-2 text-xs leading-[1.5] text-[var(--ink-faint)]">
+          So you can review from wherever you talk to it, without opening this. It&rsquo;s told what
+          is waiting when it opens a session, and it only sees proposals on what it reads. It can
+          never decide on its own proposals, and History shows every decision it makes as made for
+          you.
         </p>
       </section>
 

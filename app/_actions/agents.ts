@@ -176,6 +176,30 @@ export async function revokeAgent(id: string) {
   revalidatePath('/agents', 'layout')
 }
 
+/**
+ * Lets this agent accept and reject other agents' proposals for you, so you can
+ * review from a chat. Only the owner can set it; no MCP tool reads or changes it.
+ */
+export async function setReviewer(id: string, canReview: boolean) {
+  const owner = await requireOwner()
+  const [agent] = await db
+    .update(agents)
+    .set({ canReview })
+    .where(and(eq(agents.id, id), eq(agents.userId, owner.id)))
+    .returning()
+  if (!agent) return
+  await log({
+    userId: owner.id,
+    actorType: 'user',
+    actorLabel: 'you',
+    action: canReview ? 'turned on reviewing for' : 'turned off reviewing for',
+    targetType: 'agent',
+    targetId: id,
+    targetLabel: agent.name,
+  })
+  revalidatePath('/agents', 'layout')
+}
+
 export async function deleteAgent(id: string) {
   const owner = await requireOwner()
   const [deleted] = await db

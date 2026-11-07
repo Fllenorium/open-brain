@@ -4,19 +4,21 @@
  */
 import assert from 'node:assert/strict'
 import { before, test } from 'node:test'
-import { sql } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 
 import { issueToken } from '../lib/agent-token'
 import { claimOwner, ownerClaimed } from '../lib/auth'
 import { db } from '../lib/db'
-import { agentBindings, agentGrants, agents, collections, users } from '../lib/db/schema'
+import { activity, agentBindings, agentGrants, agents, collections, proposals, users } from '../lib/db/schema'
 import { migrate } from '../lib/db/migrate'
 import { applyToBody, makePatch } from '../lib/patch'
 import { createTool } from '../lib/mcp/tools/create'
+import { decideTool, pendingTool } from '../lib/mcp/tools/review'
 import { resolveEntries, invalidateResolution } from '../lib/resolve'
 import {
   acceptProposal,
   createEntryProposal,
+  createProposal,
   pendingCreations,
   rejectProposal,
 } from '../lib/proposals'
@@ -291,4 +293,63 @@ test('once there is an owner, nobody else can become one', async () => {
   assert.equal(stranger, null)
   const [{ count: after }] = await db.select({ count: sql<number>`count(*)::int` }).from(users)
   assert.equal(after, before, 'no user row was made for them')
+})
+
+test('a reviewer decides other agents\' proposals for you, never its own, and only on what it reads', async () => {
+  const [owner] = await db.select().from(users).where(eq(users.id, userId))
+  const reviewer = await makeAgent('Reviewer', [webAppId])
+  await db.update(agents).set({ canReview: true }).where(eq(agents.id, reviewer.id))
+  const session = { agent: { ...reviewer, canReview: true }, owner }
+  const proposer = await makeAgent('Proposer', [rootId])
+
+  const deploys = (await getEntryByPath(userId, 'engineering/deploys'))!
+  const elsewhereId = (await createCollection(userId, rootId, 'Private notes')).id
+  const hidden = await createEntry(userId, { collectionId: elsewhereId, name: 'Diary', kind: 'context', body: 'Today.' })
+
+  const propose = (agentId: string, label: string, entry: typeof deploys, line: string) =>
+    createProposal({
+      userId,
+      entry,
+      agentId,
+      authorLabel: label,
+      patch: makePatch(entry.body, `${entry.body}\n${line}`.trim()),
+      rationale: 'Testing review.',
+    })
+
+  const theirs = await propose(proposer.id, 'Proposer', deploys, 'Theirs.')
+  const own = await propose(reviewer.id, 'Reviewer', deploys, 'Its own.')
+  const outOfSight = await propose(proposer.id, 'Proposer', hidden, 'Hidden.')
+  const handle = (id: string) => id.slice(0, 8)
+
+  const listed = (await pendingTool(session)).content[0].text
+  assert.ok(listed.includes(handle(theirs.id)), 'it lists another agent\'s proposal')
+  assert.ok(listed.includes(handle(own.id)), 'it lists its own, so it can tell the owner')
+  assert.ok(!listed.includes(handle(outOfSight.id)), 'a proposal on an entry it cannot read stays invisible')
+  assert.ok(!listed.includes('Private notes') && !listed.includes('Diary'), 'and so does the entry')
+
+  const refused = (await decideTool(session, { handles: [handle(own.id)], decision: 'accept' })).content[0].text
+  assert.match(refused, /your own proposal/)
+  const [ownAfter] = await db.select().from(proposals).where(eq(proposals.id, own.id))
+  assert.equal(ownAfter.status, 'pending', 'its own proposal is still waiting for the owner')
+
+  const hiddenTry = (await decideTool(session, { handles: [handle(outOfSight.id)], decision: 'reject' })).content[0].text
+  assert.match(hiddenTry, /no waiting proposal you can see/)
+  const [hiddenAfter] = await db.select().from(proposals).where(eq(proposals.id, outOfSight.id))
+  assert.equal(hiddenAfter.status, 'pending')
+
+  const accepted = (await decideTool(session, { handles: [handle(theirs.id)], decision: 'accept' })).content[0].text
+  assert.match(accepted, /accepted/)
+  const [theirsAfter] = await db.select().from(proposals).where(eq(proposals.id, theirs.id))
+  assert.equal(theirsAfter.status, 'accepted')
+  assert.match((await getEntryByPath(userId, 'engineering/deploys'))!.body, /Theirs\./)
+
+  const [logged] = await db
+    .select()
+    .from(activity)
+    .where(eq(activity.actorId, reviewer.id))
+    .orderBy(sql`${activity.createdAt} desc`)
+    .limit(1)
+  assert.equal(logged.action, 'accepted')
+  assert.equal(logged.actorLabel, 'Reviewer', 'History names the agent, not "you"')
+  assert.equal((logged.metadata as { onBehalfOfOwner?: boolean }).onBehalfOfOwner, true)
 })

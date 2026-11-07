@@ -55,7 +55,8 @@ won't be merged, however good the rest of it is.
 4. **`brain_open` returns rules in full and everything else as an index.**
    Never bodies.
 5. **Nothing writes into a document without the owner seeing it.** Agent edits,
-   Ask, and Review all arrive as pending proposals.
+   Ask, and Review all arrive as pending proposals. An agent the owner makes a
+   reviewer can decide them for the owner, but never its own.
 6. **No vector database, no embeddings, no chunking.** Search is Postgres
    full-text plus substring. If retrieval needs to be semantic, the entries are
    too big.

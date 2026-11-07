@@ -166,9 +166,10 @@ Commits should have good messages.`,
     tags: [],
   })
 
-  // Two agents, different views of the same brain.
+  // Two agents, different views of the same brain. Claude Code is a reviewer,
+  // so it can go through Hermes's proposals for you without opening the app.
   const hermes = await agent(owner.id, 'Hermes', [engineering.id], 'propose', 2)
-  const claudeCode = await agent(owner.id, 'Claude Code', [webApp.id], 'propose', 26)
+  const claudeCode = await agent(owner.id, 'Claude Code', [webApp.id], 'propose', 26, { canReview: true })
   await agent(owner.id, 'Draft bot', [writing.id], 'propose', null)
 
   await seedConnections(owner.id)
@@ -361,6 +362,7 @@ async function agent(
   bind: string[],
   writePolicy: 'propose' | 'direct',
   lastSeenHoursAgo: number | null,
+  options: { canReview?: boolean } = {},
 ) {
   const token = issueToken()
   const [row] = await db
@@ -371,6 +373,7 @@ async function agent(
       tokenHash: token.hash,
       tokenPrefix: token.prefix,
       writePolicy,
+      canReview: options.canReview ?? false,
       lastSeenAt: lastSeenHoursAgo === null ? null : hoursAgo(lastSeenHoursAgo),
     })
     .returning()

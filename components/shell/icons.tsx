@@ -81,22 +81,22 @@ export function SearchIcon() {
 }
 
 /** The wordmark's mark: a rolled sheet, seen end on. */
+/**
+ * Half a brain, and the other half opened out into lines you can read. White,
+ * like the rest of the interface; the favicon is the only place its middle line
+ * is rubric, because inside the product red means a pending claim and nothing else.
+ */
 export function Mark() {
   return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="M6 4.5h12" />
-      <path d="M6 4.5a2.5 2.5 0 0 0 0 5h12" />
-      <path d="M18 4.5v15" />
-      <path d="M18 19.5H8a2.5 2.5 0 0 1 0-5h10" />
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+      <path d="M10.8 2.5A9.5 9.5 0 0 0 10.8 21.5z" fill="currentColor" />
+      <g stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+        <path d="M13.6 4.2h2.2" />
+        <path d="M13.6 8.1h6.1" />
+        <path d="M13.6 12h7.6" />
+        <path d="M13.6 15.9h6.1" />
+        <path d="M13.6 19.8h2.2" />
+      </g>
     </svg>
   )
 }

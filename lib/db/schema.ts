@@ -128,6 +128,12 @@ export const agents = pgTable(
      * written without the owner seeing it. The column stays so old rows load.
      */
     writePolicy: text('write_policy').notNull().default('propose'),
+    /**
+     * Whether this agent may accept and reject proposals for the owner — so the
+     * owner can review from a chat instead of the app. Set only by the owner;
+     * no MCP tool reads or changes it. Never covers the agent's own proposals.
+     */
+    canReview: boolean('can_review').notNull().default(false),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

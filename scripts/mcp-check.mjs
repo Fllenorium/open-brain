@@ -56,6 +56,21 @@ check(
   !names.some((n) => /bind|grant|polic|secret|agent_|revoke/.test(n)),
 )
 
+// review: only an agent the owner made a reviewer gets the tools, and it
+// can never decide its own proposals
+const reviewerTools = (await rpc(tokens['Claude Code'], { jsonrpc: '2.0', id: 3, method: 'tools/list', params: {} })).json?.result?.tools?.map((t) => t.name) ?? []
+check('a reviewer gets brain_pending and brain_decide', reviewerTools.includes('brain_pending') && reviewerTools.includes('brain_decide'))
+check('an agent that is not a reviewer has neither', !names.includes('brain_pending') && !names.includes('brain_decide'))
+const waiting = text(await call(tokens['Claude Code'], 'brain_pending'))
+const handleBy = (author) => new RegExp(`## ([0-9a-f]{8}) [^\\n]*\\n${author} proposed`).exec(waiting)?.[1]
+const hermesHandle = handleBy('Hermes')
+const ownHandle = handleBy('Claude Code')
+check('it lists what is waiting, with the diff', Boolean(hermesHandle && ownHandle) && waiting.includes('```diff'))
+const ownTry = text(await call(tokens['Claude Code'], 'brain_decide', { handles: [ownHandle], decision: 'accept' }))
+check('it cannot decide its own proposal', /your own proposal/.test(ownTry))
+const decided = text(await call(tokens['Claude Code'], 'brain_decide', { handles: [hermesHandle], decision: 'reject' }))
+check('it can reject another agent\'s proposal for you', /rejected/.test(decided), decided.trim().split('\n').at(-1))
+
 // open
 const open = await call(tokens.Hermes, 'brain.open')
 const doc = text(open)

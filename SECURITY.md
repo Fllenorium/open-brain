@@ -16,6 +16,7 @@ Especially worth reporting:
 - Any way for an agent to read or change its own bindings, grants, or write
   policy, or to read a credential through a tool.
 - Anything that writes into an entry without a pending proposal.
+- A reviewer agent deciding its own proposal, or seeing one outside what it reads.
 - A way around the owner key or the agent bearer tokens.
 - A credential that can be recovered without `OPENBRAIN_MASTER_KEY`.
 

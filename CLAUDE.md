@@ -33,7 +33,11 @@ Violating any of these is a bug, not a style choice.
    Never bodies. Dumping the whole store into every session is what makes
    context files degrade agent performance rather than improve it.
 4. **Nothing writes into a document without the user seeing it.** Agent edits,
-   Ask's edits, and Review's suggestions all arrive as pending proposals.
+   Ask's edits, and Review's suggestions all arrive as pending proposals. The
+   owner decides them in the app, in `pnpm brain`, or through an agent they've
+   made a reviewer (`lib/mcp/tools/review.ts`) — and a reviewer can never
+   decide its own proposals, or one on an entry it can't read. That rule is what
+   keeps "reviewer" from being direct write by another name; don't loosen it.
 5. **No vector database, no embeddings, no chunking.** Search is Postgres
    full-text plus substring. If retrieval feels like it needs semantic search,
    the entries are too big.
@@ -58,6 +62,8 @@ Violating any of these is a bug, not a style choice.
   reach `EditorView.domEventHandlers`).
 - `lib/boot-payload.ts` — shared by `brain_open` and the "What this agent
   sees" screen, so the screen cannot drift from the payload.
+- `lib/review.ts` — which proposals a reviewer agent can see. Shared by the
+  review tools and the boot payload, so the count it's told matches the list.
 - `lib/connections.ts` — what an agent can reach. Knowledge is read; a
   connection is touched. A secret is just a connection with no endpoint, which
   is why there is one table and not two.

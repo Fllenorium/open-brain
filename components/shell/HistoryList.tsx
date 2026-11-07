@@ -111,7 +111,16 @@ export function HistoryList({
 }
 
 function summaryOf(event: Event): string {
-  const meta = event.metadata as { summary?: string; tokens?: number; created?: number; proposed?: number }
+  const meta = event.metadata as {
+    summary?: string
+    tokens?: number
+    created?: number
+    proposed?: number
+    from?: string
+    onBehalfOfOwner?: boolean
+  }
+  // A decision an agent made for you says so, and whose proposal it was.
+  if (meta.onBehalfOfOwner) return `for you · ${meta.from ?? 'a proposal'}`
   if (meta.summary) return meta.summary
   if (typeof meta.tokens === 'number') return `${meta.tokens.toLocaleString('en-US')} tokens`
   if (typeof meta.created === 'number') return `${meta.created} written`

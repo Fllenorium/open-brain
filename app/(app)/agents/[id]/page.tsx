@@ -56,6 +56,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
           tokenPrefix: agent.tokenPrefix,
           lastSeenAt: agent.lastSeenAt?.toISOString() ?? null,
           revokedAt: agent.revokedAt?.toISOString() ?? null,
+          canReview: agent.canReview,
         }}
         collections={cols.map((c) => ({ id: c.id, name: c.name, path: c.path }))}
         skills={ents
