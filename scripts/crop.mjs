@@ -1,0 +1,11 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch({ channel: 'chrome' })
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 3 })
+await page.goto('http://localhost:3000/workspace/engineering/deploys', { waitUntil: 'networkidle' })
+await page.waitForTimeout(800)
+const el = page.locator('.cm-prop-actions').first()
+await el.screenshot({ path: 'screenshots/_crop-actions.png' })
+const kbd = page.locator('header kbd').first()
+await kbd.screenshot({ path: 'screenshots/_crop-kbd.png' })
+console.log('ok')
+await browser.close()

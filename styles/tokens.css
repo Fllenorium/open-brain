@@ -1,0 +1,56 @@
+/* Open Brain design tokens.
+   Warm near-black, one type family, white as the interface accent — and red
+   kept back for the one thing it means. */
+
+:root {
+  /* surface, darkest first */
+  --paper-inset:  #141412;   /* the rail */
+  --paper:        #151513;   /* the canvas */
+  --surface:      #1F1F1C;   /* cards, nested blocks, inputs */
+  --surface-hi:   #2B2B2A;   /* the active item, hover */
+  --rule:         #232321;   /* hairlines, card borders */
+  --rule-strong:  #312F2D;   /* focus rings, active borders */
+
+  /* ink */
+  --ink:          #F0F0F0;   /* primary                     16.0:1 on paper */
+  --ink-soft:     #A4A4A3;   /* secondary                    7.3:1 */
+  --ink-faint:    #8A8886;   /* metadata, placeholders       5.2:1 */
+
+  /**
+   * The interface accent is white: pills, primary buttons, the active rail
+   * item. Which leaves red to mean exactly one thing and nothing else — a
+   * second hand's pending claim on the text.
+   */
+  --rubric:       #E8705F;   /*                              6.0:1 on paper */
+  --rubric-wash:  #2A1815;   /* background of pending regions */
+  --rubric-soft:  #8A4136;   /* rubric at rest, hairlines */
+
+  /* the first time an agent ever connects, its name writes itself in this,
+     for a beat, and then settles to ink. Nowhere else, once ever. */
+  --gilt:         #C9A55F;
+
+  /* behind dialogs and the command palette, the only two things that float */
+  --scrim:        rgba(0, 0, 0, 0.6);
+
+  /* type — one family, plus mono for anything an agent would type */
+  --sans: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: var(--font-geist-mono), 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* shape — two steps: controls, and the cards that hold them */
+  --radius:    10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* motion, all of it functional */
+  --accept: 180ms;
+  --reject: 120ms;
+  --expand: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --accept: 0ms;
+    --reject: 0ms;
+    --expand: 0ms;
+  }
+}

@@ -1,0 +1,19 @@
+name: Idea
+description: Something Open Brain should do.
+labels: [idea]
+body:
+  - type: textarea
+    attributes:
+      label: The problem
+      description: What you were trying to get an agent to do, and where Open Brain got in the way.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What you'd want instead
+  - type: markdown
+    attributes:
+      value: |
+        Some things are out of scope by design: teams and shared workspaces,
+        embeddings or a vector database, and anything that writes into an
+        entry without the owner seeing it first. CONTRIBUTING.md says why.

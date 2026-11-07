@@ -1,0 +1,45 @@
+# Open Brain and a Postgres for it.
+#
+#   export OPENBRAIN_OWNER_KEY=$(openssl rand -base64 24)
+#   export OPENBRAIN_MASTER_KEY=$(openssl rand -base64 32)
+#   docker compose up -d
+#
+# Then sign in at http://localhost:3000/unlock with the owner key. Keep a copy
+# of the master key somewhere that isn't this machine: lose it and every stored
+# credential is unreadable.
+
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://openbrain:openbrain@db:5432/openbrain?sslmode=disable
+      OPENBRAIN_OWNER_KEY: ${OPENBRAIN_OWNER_KEY:?Set OPENBRAIN_OWNER_KEY. Generate one with openssl rand -base64 24}
+      OPENBRAIN_MASTER_KEY: ${OPENBRAIN_MASTER_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - mirror:/app/.openbrain
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: openbrain
+      POSTGRES_PASSWORD: openbrain
+      POSTGRES_DB: openbrain
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U openbrain']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  mirror:

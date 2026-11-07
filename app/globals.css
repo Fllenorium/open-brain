@@ -1,0 +1,308 @@
+@import 'tailwindcss';
+@import '../styles/tokens.css';
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-inset: var(--paper-inset);
+  --color-surface: var(--surface);
+  --color-surface-hi: var(--surface-hi);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rubric: var(--rubric);
+  --color-rubric-wash: var(--rubric-wash);
+  --color-rubric-soft: var(--rubric-soft);
+  --color-gilt: var(--gilt);
+
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+
+  /* Scale: 12 / 13 / 14 / 16.5 / 20 / 28 / 40. Nothing between. */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-doc: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+
+  --radius-DEFAULT: var(--radius);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; }
+  input, textarea { font: inherit; color: inherit; background: none; border: none; }
+  input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+  a { color: inherit; text-decoration: none; }
+
+  /* visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid var(--ink-soft);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+  :focus:not(:focus-visible) { outline: none; }
+
+  ::selection { background: var(--rubric-wash); color: var(--rubric); }
+
+  /* Chrome scrollbars, quietened */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); background-clip: content-box; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  select {
+    color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  /* Document text. One family throughout, so this only tunes the reading size. */
+  .font-doc {
+    font-family: var(--sans);
+    letter-spacing: -0.011em;
+  }
+  .measure { max-width: 68ch; }
+
+  /* Uppercase micro-label used across chrome. Below the type scale on purpose:
+     11px tracked-out reads as a label, not as text. */
+  .label {
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+}
+
+/* ---------------- CodeMirror: styled until it stops looking like an editor -------- */
+
+.cm-editor { background: transparent; }
+.cm-editor.cm-focused { outline: none !important; }
+.cm-editor .cm-scroller {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: -0.011em;
+  overflow: visible;
+}
+.cm-editor .cm-content {
+  padding: 0;
+  caret-color: var(--ink);
+  color: var(--ink);
+}
+.cm-editor .cm-line { padding: 0; }
+.cm-editor .cm-cursor { border-left-color: var(--ink); border-left-width: 1.5px; }
+.cm-editor .cm-selectionBackground,
+.cm-editor.cm-focused .cm-selectionBackground,
+.cm-editor ::selection { background: var(--rubric-wash) !important; }
+.cm-editor .cm-placeholder { color: var(--ink-faint); font-style: normal; }
+.cm-editor .cm-gutters { display: none; }
+
+/* markdown syntax, kept nearly invisible — the document should read as prose */
+.cm-editor .tok-heading { font-weight: 600; font-size: 20px; line-height: 1.4; }
+.cm-editor .tok-strong { font-weight: 600; }
+.cm-editor .tok-emphasis { font-style: italic; }
+.cm-editor .tok-link { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 2px; }
+.cm-editor .tok-monospace {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+.cm-editor .tok-meta { color: var(--ink-faint); }
+
+/* ghost text — Continue (§10). Grey, because nothing has been asserted yet. */
+.cm-ghost-text {
+  color: var(--ink-faint);
+  opacity: 0.85;
+}
+
+/* ---------------- the rubric — DESIGN.md §5 -------------------------------- */
+
+/* A proposal sits in the document, in the agent's hand, at its position. */
+.cm-prop {
+  display: block;
+  margin: 0 0 1.05em;
+  border-radius: var(--radius);
+}
+.cm-prop:focus-visible {
+  outline: 2px solid var(--rule-strong);
+  outline-offset: 4px;
+}
+
+/* Additions: rubric on a wash, with the hand's rule down the left. */
+.cm-prop-add {
+  color: var(--rubric);
+  background: var(--rubric-wash);
+  box-shadow: inset 2px 0 0 var(--rubric);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 4px 10px 4px 12px;
+  white-space: pre-wrap;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: -0.011em;
+  transition:
+    color var(--accept) ease-out,
+    background-color var(--accept) ease-out,
+    box-shadow var(--accept) ease-out;
+}
+.cm-prop-add.is-editing {
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--rubric), 0 0 0 1px var(--rubric-soft);
+}
+
+/* Accept: the wash drains and the text becomes ink. Nothing moves. */
+.cm-prop.is-accepted .cm-prop-add {
+  color: var(--ink);
+  background: transparent;
+  box-shadow: inset 2px 0 0 transparent;
+}
+.cm-prop.is-accepted .cm-prop-annot,
+.cm-prop.is-rejected .cm-prop-annot {
+  opacity: 0;
+  transition: opacity var(--reject) ease-out;
+}
+
+/* Reject: fade and collapse; the surrounding text closes up. */
+.cm-prop.is-rejected {
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity var(--reject) ease-out,
+    transform var(--reject) ease-out;
+}
+
+/* Deletions: rubric with a strikethrough, still in place. */
+.cm-line.cm-prop-del {
+  color: var(--rubric);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.85;
+  transition:
+    color var(--accept) ease-out,
+    opacity var(--accept) ease-out;
+}
+.cm-line.cm-prop-del.is-leaving { opacity: 0; }
+.cm-line.cm-prop-del.is-restored {
+  color: var(--ink);
+  text-decoration: none;
+  opacity: 1;
+}
+
+/* The second hand signs its work. */
+.cm-prop-annot {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 16px;
+  font-family: var(--sans);
+  margin-top: 10px;
+  padding-top: 10px;
+  padding-left: 12px;
+  border-top: 1px dashed var(--rule-strong);
+}
+.cm-prop.is-deletion .cm-prop-annot { padding-left: 0; }
+.cm-prop-meta { font-size: 12px; color: var(--ink-faint); }
+.cm-prop-meta b { font-weight: 500; color: var(--ink-soft); }
+.cm-prop-why {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.cm-prop-stale { font-size: 12px; color: var(--rubric); margin-top: 4px; }
+
+.cm-prop-actions { display: flex; gap: 6px; flex: none; }
+.cm-prop-act {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+  background: var(--surface);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cm-prop-act:hover { border-color: var(--ink-faint); color: var(--ink); }
+.cm-prop-act.is-primary {
+  border-color: var(--rubric-soft);
+  color: var(--rubric);
+  background: var(--rubric-wash);
+}
+.cm-prop-act.is-primary:hover { border-color: var(--rubric); }
+.cm-prop-key {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-faint);
+  margin-left: 5px;
+}
+
+/* ---------------- form controls, restyled to the tokens ------------------- */
+
+/* Native checkboxes carry a platform personality that fights this one. */
+input[type='checkbox'] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--surface);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 120ms ease-out, background-color 120ms ease-out;
+}
+input[type='checkbox']:hover { border-color: var(--ink-faint); }
+input[type='checkbox']:checked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--paper);
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+
+/* Two agents rewriting the same lines. Said once, in the agent's own colour,
+   before you click — not discovered after one silently supersedes the other. */
+.cm-prop-conflict {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--rubric);
+  margin-top: 4px;
+}

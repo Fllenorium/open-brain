@@ -1,0 +1,73 @@
+{
+  "name": "open-brain",
+  "version": "0.1.0",
+  "description": "The brain for AI agents. One place to write what your agents know, served over MCP, that you can read and correct.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fllenorium/open-brain.git"
+  },
+  "homepage": "https://github.com/Fllenorium/open-brain#readme",
+  "bugs": {
+    "url": "https://github.com/Fllenorium/open-brain/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "claude",
+    "context",
+    "agent-instructions",
+    "self-hosted"
+  ],
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx lib/db/migrate.ts",
+    "db:seed": "NODE_OPTIONS=--conditions=react-server tsx scripts/seed.ts",
+    "test": "rm -rf .openbrain/testdata && NODE_OPTIONS=--conditions=react-server DATABASE_URL=pglite:.openbrain/testdata tsx --test tests/*.test.ts",
+    "brain": "NODE_OPTIONS=--conditions=react-server tsx scripts/brain.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "@clerk/nextjs": "^7.9.2",
+    "@codemirror/commands": "^6.9.0",
+    "@codemirror/lang-markdown": "^6.3.4",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.39.1",
+    "@electric-sql/pglite": "^0.5.8",
+    "@lezer/highlight": "^1.2.3",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
+    "diff": "^9.0.0",
+    "drizzle-orm": "^0.45.2",
+    "isomorphic-git": "^1.42.2",
+    "next": "15.5.25",
+    "pg": "^8.16.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.18.1",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.10",
+    "playwright": "^1.63.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
